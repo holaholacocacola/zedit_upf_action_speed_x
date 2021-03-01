@@ -1,0 +1,12 @@
+{
+  "id": "ActionSpeedX",
+  "name": "Action Speed X",
+  "author": "HolaholaCocacola",
+  "version": "1.0.0",
+  "released": "1/20/21",
+  "updated": "1/20/21",
+  "description": "Patcher for Action Speed X",
+  "requires": ["unifiedPatchingFramework"],
+  "moduleLoader": "UPF",
+  "canHotLoad": true
+}
