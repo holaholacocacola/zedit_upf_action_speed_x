@@ -468,112 +468,118 @@ registerPatcher({
 				Look at the Body template as opposed to keywords for the type because some armors 'mix' light and heavy material keywords *cough* Armory of tamriel :| *cough*
 				*/
                 let recordId = xelib.GetValue(record, 'EDID');
-				let armorType = xelib.GetValue(record, 'BOD2\\Armor Type');
-				//helpers.logMessage(recordId + ' is being looked at with type: ' + armorType);
-				let keyStore = null; // determine which keys to use. This will be pointed at the dict containing array of armorslot key words
-				let armorSlot = null; // gloves,boots etc
-				let tier = -1; // index in the keystore to use. This is set when iterating through armorRanks.
-				let descLookup = null;
-				if (armorType == 'Light Armor') {
-					keyStore = locals.lightSlots;
-					descLookup = LIGHT;
-				}
-				else if (armorType == 'Heavy Armor') {
-					keyStore = locals.heavySlots;
-					descLookup = HEAVY;
-				}
-				else {
-					//wtf
-					return;
-				}
-
-				helpers.logMessage("Evaluating record: " + recordId);
-				
-				/* We want to grab the highest material tier as some items can have multiple material keywrods
-                   Loop over the armorRankings(see armor_materials.json) and check the current armors keywords for a match.
-                   Item.key = int/str, item.val=List(armor material strings)
-                */
-				for(var armorMaterial in locals.armorRanks) {
-					if (xelib.HasKeyword(record, armorMaterial) && tier < parseInt(locals.armorRanks[armorMaterial])) {
-						tier = locals.armorRanks[armorMaterial];
-					}	
-				}
-				
-				if (tier < 0 ) {
-					helpers.logMessage("No recognized material type for " + recordId + ". Skipping");
-					return;
-				
-				}
-				else {
-					tier -= 1;
-				}
-				
-				if (xelib.HasKeyword(record, 'ArmorBoots')) {
-					helpers.logMessage(recordId + " is boots");
-					armorSlot = BOOTS;
-				}
-				else if(xelib.HasKeyword(record, 'ArmorCuirass')) {
-					helpers.logMessage(recordId + " is cuirass");
-					armorSlot = CUIRASS;
-				}
-				else if (xelib.HasKeyword(record, 'ArmorHelmet')) {
-					helpers.logMessage(recordId + " is helmet");
-					armorSlot = HELMET;
-				}
-				else if (xelib.HasKeyword(record, 'ArmorGauntlets')) {
-					helpers.logMessage(recordId + " is gauntlets");
-					armorSlot = GAUNTLETS;
-				}
-				else if (xelib.HasKeyword(record, 'ArmorShield')) {
-					helpers.logMessage(recordId + " is shield");
-					armorSlot = SHIELD;
-				}
-				else {
-					helpers.logMessage(recordId + " has no avaible slot");
-					return;
-				}
-				
-				xelib.AddKeyword(record, keyStore[armorSlot][tier]);
-				helpers.logMessage(recordId + ': addded armor keywords successfully');   
-				// set descriptions. Shield/Boots share the same descriptions. as well as Gauntlets/Helmet
-				if (!settings.descriptions) {
-					return;
-				}
-				
-				if (armorSlot == SHIELD) {
-					armorSlot = BOOTS;
-				}
-				if (armorSlot == HELMET) {
-					armorSlot = GAUNTLETS;
-				}
-				
-				
-				let descArray = {
-					[RATTACK_SPEED]: settings.rangedSpeed,
-					[ATTACK_SPEED]: settings.attackSpeed,
-					[MOVE_SPEED]: settings.moveSpeed,
-					[SPELL_COST]: settings.spellCosts,
-					[STAMINA]: settings.staminaRegen,
-					[MAGICKA]: settings.magickaRegen,
-					[POWER_ATTACKS]: settings.powerAttacks
-				};
-				
-				let newDescription = '';
-				for (var descripType in descArray) {
-					if (descArray[descripType]) {
-						// This is so ugly....
-						// If only I cared about js ;)
-						newDescription += locals.effectDescriptions[descripType].replace("{", locals.effectMagnitudes[armorSlot][descripType][descLookup][tier]);
-
+				 
+				try {
+					let armorType = xelib.GetValue(record, 'BOD2\\Armor Type');
+					//helpers.logMessage(recordId + ' is being looked at with type: ' + armorType);
+					let keyStore = null; // determine which keys to use. This will be pointed at the dict containing array of armorslot key words
+					let armorSlot = null; // gloves,boots etc
+					let tier = -1; // index in the keystore to use. This is set when iterating through armorRanks.
+					let descLookup = null;
+					if (armorType == 'Light Armor') {
+						keyStore = locals.lightSlots;
+						descLookup = LIGHT;
 					}
-				}
-				let armorDescription = xelib.GetValue(record, 'DESC')
-                    if (armorDescription == '') {
-                        xelib.SetValue(record, 'DESC', newDescription);
-                    }
+					else if (armorType == 'Heavy Armor') {
+						keyStore = locals.heavySlots;
+						descLookup = HEAVY;
+					}
+					else {
+						//wtf
+						return;
+					}
+
+					helpers.logMessage("Evaluating record: " + recordId);
+					
+					/* We want to grab the highest material tier as some items can have multiple material keywrods
+					   Loop over the armorRankings(see armor_materials.json) and check the current armors keywords for a match.
+					   Item.key = int/str, item.val=List(armor material strings)
+					*/
+					for(var armorMaterial in locals.armorRanks) {
+						if (xelib.HasKeyword(record, armorMaterial) && tier < parseInt(locals.armorRanks[armorMaterial])) {
+							tier = locals.armorRanks[armorMaterial];
+						}	
+					}
+					
+					if (tier < 0 ) {
+						helpers.logMessage("No recognized material type for " + recordId + ". Skipping");
+						return;
+					
+					}
+					else {
+						tier -= 1;
+					}
+					
+					if (xelib.HasKeyword(record, 'ArmorBoots')) {
+						helpers.logMessage(recordId + " is boots");
+						armorSlot = BOOTS;
+					}
+					else if(xelib.HasKeyword(record, 'ArmorCuirass')) {
+						helpers.logMessage(recordId + " is cuirass");
+						armorSlot = CUIRASS;
+					}
+					else if (xelib.HasKeyword(record, 'ArmorHelmet')) {
+						helpers.logMessage(recordId + " is helmet");
+						armorSlot = HELMET;
+					}
+					else if (xelib.HasKeyword(record, 'ArmorGauntlets')) {
+						helpers.logMessage(recordId + " is gauntlets");
+						armorSlot = GAUNTLETS;
+					}
+					else if (xelib.HasKeyword(record, 'ArmorShield')) {
+						helpers.logMessage(recordId + " is shield");
+						armorSlot = SHIELD;
+					}
+					else {
+						helpers.logMessage(recordId + " has no avaible slot");
+						return;
+					}
+					
+					xelib.AddKeyword(record, keyStore[armorSlot][tier]);
+					helpers.logMessage(recordId + ': addded armor keywords successfully');   
+					// set descriptions. Shield/Boots share the same descriptions. as well as Gauntlets/Helmet
+					if (!settings.descriptions) {
+						return;
+					}
+					
+					if (armorSlot == SHIELD) {
+						armorSlot = BOOTS;
+					}
+					if (armorSlot == HELMET) {
+						armorSlot = GAUNTLETS;
+					}
+					
+					
+					let descArray = {
+						[RATTACK_SPEED]: settings.rangedSpeed,
+						[ATTACK_SPEED]: settings.attackSpeed,
+						[MOVE_SPEED]: settings.moveSpeed,
+						[SPELL_COST]: settings.spellCosts,
+						[STAMINA]: settings.staminaRegen,
+						[MAGICKA]: settings.magickaRegen,
+						[POWER_ATTACKS]: settings.powerAttacks
+					};
+					
+					let newDescription = '';
+					for (var descripType in descArray) {
+						if (descArray[descripType]) {
+							// This is so ugly....
+							// If only I cared about js ;)
+							newDescription += locals.effectDescriptions[descripType].replace("{", locals.effectMagnitudes[armorSlot][descripType][descLookup][tier]);
+
+						}
+					}
+					let armorDescription = xelib.GetValue(record, 'DESC')
+					if (armorDescription == '') {
+						xelib.SetValue(record, 'DESC', newDescription);
+					}
 					else {
 						xelib.SetValue(record, 'DESC', armorDescription + newDescription);
 					}
+				}catch(err) {
+				  helpers.logMessage(`Could not process armor record ${recordId}: ${err.getMessage()}`)
+				}
+				
             }
 		}
 		,{
@@ -601,43 +607,48 @@ registerPatcher({
             },
             patch: function (record) {
                 // add the armor perks to all these records
-                let recordId = xelib.GetValue(record, 'EDID');
-                helpers.logMessage(recordId + ': adding action perks');
-				locals.perksToAppy.forEach(perk => {
-					xelib.AddPerk(record, perk, '1');
-				})
 				
-				// add races to everyone but player. Default player race gets assigned nord perk if we dont
-				if (settings.racialAbilities) {
-					let raceName = xelib.GetValue(record, 'RNAM').split(' ')[0];
-					if (raceName in locals.racialPerks) {
-						if (recordId != "Player") {
-							xelib.AddPerk(record, locals.racialPerks[raceName], '1');
-						}
-						// add dummy perk. During race selection a quest will run to assign the players racial perk and remove this..
-						if (recordId == "Player" && !locals.addedDummy) {
-							xelib.AddPerk(record, locals.dummyPerk, '1');
-							locals.addedDummy = true;
-						}
-					}
-				}
-				
-				//loop over factions and pull perk from dictionary
-				if (settings.allowFactions) {
+				let recordId = xelib.GetValue(record, 'EDID');
+				try {
+					helpers.logMessage(recordId + ': adding action perks');
+					locals.perksToAppy.forEach(perk => {
+						xelib.AddPerk(record, perk, '1');
+					})
 					
-					if (!xelib.HasElement(record, "Factions")) {
-						helpers.logMessage(recordId + " has no faction data");
-						return;
-					}
-				
-					let factions = xelib.GetElements(record, 'Factions');
-					factions.forEach(faction => {
-						
-						let factionName = xelib.GetValue(faction, 'Faction').split(' ')[0];;
-						if (factionName in locals.factionPerks) {
-							xelib.AddPerk(record, locals.factionPerks[factionName], '1');
+					// add races to everyone but player. Default player race gets assigned nord perk if we dont
+					if (settings.racialAbilities) {
+						let raceName = xelib.GetValue(record, 'RNAM').split(' ')[0];
+						if (raceName in locals.racialPerks) {
+							if (recordId != "Player") {
+								xelib.AddPerk(record, locals.racialPerks[raceName], '1');
+							}
+							// add dummy perk. During race selection a quest will run to assign the players racial perk and remove this..
+							if (recordId == "Player" && !locals.addedDummy) {
+								xelib.AddPerk(record, locals.dummyPerk, '1');
+								locals.addedDummy = true;
+							}
 						}
-					});   
+					}
+					
+					//loop over factions and pull perk from dictionary
+					if (settings.allowFactions) {
+						
+						if (!xelib.HasElement(record, "Factions")) {
+							helpers.logMessage(recordId + " has no faction data");
+							return;
+						}
+					
+						let factions = xelib.GetElements(record, 'Factions');
+						factions.forEach(faction => {
+							
+							let factionName = xelib.GetValue(faction, 'Faction').split(' ')[0];;
+							if (factionName in locals.factionPerks) {
+								xelib.AddPerk(record, locals.factionPerks[factionName], '1');
+							}
+						});   
+					}
+				} catch(err) {
+				  helpers.logMessage(`Could not process npc record ${recordId}: ${err.getMessage()}`)
 				}
             }
         }],
